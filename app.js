@@ -26,9 +26,10 @@ const posts = []
 /* Home page content */
 app.get("/", (req, res) => {
 
-  
+
   res.render("home", {
-    startContent: homeStartingContent, newPosts:posts
+    startContent: homeStartingContent,
+    newPosts: posts
   });
 });
 
@@ -63,32 +64,34 @@ app.post("/compose", (req, res) => {
     }
   };
 
-  
+
 
   const post = new Post(req.body.postTitle, req.body.postBody);
 
   posts.push(post);
 
   res.redirect("/");
-  
-  
+
+
 });
 
 app.get("/post/:postName", (req, res) => {
-  
-  console.log(req.params)
 
   const postName = _.kebabCase(req.params.postName);
 
   posts.forEach((post) => {
     if (_.kebabCase(post.title) === postName) {
-      console.log("Match Found");
+      res.render("post", {
+        title: post.title,
+        content: post.content,
+      });
+
     } else {
-      console.log("There is no such post");
+
     }
   });
-  
-})
+
+});
 
 
 /* setting up port listening to enable node js server. */
