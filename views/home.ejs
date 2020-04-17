@@ -1,7 +1,20 @@
 <%- include("partials/header.ejs") -%> 
 
-<h1>Home</h1>
+<div class="box">
+  <h1>Home</h1>
 
-<p> <%= startContent %> </p>
+  <p> <%= startContent %> </p>
+</div>
+
+<div class="box">
+
+  <% newPosts.forEach((newPost) => { %>
+    <div class="item">
+      <h2 class="postTitle"> <%= newPost.title %>  </h2>
+      <p class="postBody"> <%= newPost.content %> </p>
+    </div>
+  <% }) %>
+  
+</div>
 
 <%- include("partials/footer") -%>
