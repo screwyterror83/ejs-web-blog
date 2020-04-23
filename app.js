@@ -1,7 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
-const _ = require("lodash")
+const _ = require("lodash");
+const mongoose = require("mongoose");
 
 
 const homeStartingContent = "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing.";
@@ -20,20 +21,45 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static("public"));
 
-/* creating a array to store all the posts */
-const posts = []
+const dbName = "webBlogDB";
+
+/*  1. connect to DB server, create new DB 
+    2. create schema for documents
+    3. create DB model using created schema.
+*/
+mongoose.connect(
+  "mongodb+srv://admin-darren:Mongodb382%23@cluster0-gmncq.mongodb.net/" +
+  dbName, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useFindAndModify: false,
+  }
+);
+
+const postSchema = new mongoose.Schema({
+  topic: String,
+  content: String,
+});
+
+const Post = mongoose.model("Post", postSchema)
 
 /* Home page content */
 app.get("/", (req, res) => {
 
+  Post.find({}, (err, foundPost) => {
+      if (err) {
+        console.log(err);
+      } else if (foundPost) {
+        console.log(foundPost)
+        res.render("home", {
+          startContent: homeStartingContent,
+          newPosts: foundPost,
+        });
+      }
+    }
 
-
-  res.render("home", {
-    startContent: homeStartingContent,
-    newPosts: posts,
-  });
+  );
 });
-
 
 /* About page content */
 app.get("/about", (req, res) => {
@@ -58,44 +84,54 @@ app.get("/compose", (req, res) => {
 /* POST action to compose page */
 app.post("/compose", (req, res) => {
 
-  class Post {
-    constructor(title, content) {
-      this.title = title;
-      this.content = content;
-    }
-  };
 
+  console.log(req.body.postTitle)
+  console.log(req.body.postBody)
 
-
-  const post = new Post(req.body.postTitle, req.body.postBody);
-
-  posts.push(post);
-
-  res.redirect("/");
-
-
-});
-
-app.get("/post/:postName", (req, res) => {
-
-  const postName = _.kebabCase(req.params.postName);
-
-  posts.forEach((post) => {
-    if (_.kebabCase(post.title) === postName) {
-      res.render("post", {
-        title: post.title,
-        content: post.content,
-      });
-
-    } else {
-
-    }
+  const post = new Post({
+    topic: req.body.postTitle,
+    content: req.body.postBody,
   });
 
+  post.save((err) => {
+    if (!err) {
+      res.redirect("/");
+    }
+  });
 });
 
+app.get("/posts/:postId", (req, res) => {
+
+  console.log(req.params)
+  const reqPostId = req.params.postId;
+
+  Post.findOne(
+    {
+      _id: reqPostId,
+    },
+    (err, foundPost) => {
+      if (!err) {
+          res.render("post", {
+            title: foundPost.topic,
+            content: foundPost.content,
+          });
+        } else {
+          res.redirect("/");
+        }
+      }
+  );
+})
+
+
+
+
+
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 3000;
+};
 
 /* setting up port listening to enable node js server. */
-app.listen(process.env.PORT || 3000, function () {
+app.listen(port, () => {
   console.log("Server started on port 3000");
 });
