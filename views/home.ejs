@@ -15,7 +15,7 @@
         on home page, cutting the displayed post content to equal or less to 100 
         characters, using "str.slice(start, end)" method in this
        -->
-      <p class="postBody"> <%= newPost.content.slice(0,100) + "..." %> <a href="/post/<%= newPost.title %>">Read More</a> </p>
+      <p class="postBody"> <%= newPost.content.slice(0,100) + "..." %> <a href="/posts/<%= newPost._id %>">Read More</a> </p>
     </div>
   <% }) %>
   

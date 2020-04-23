@@ -29,8 +29,7 @@ const dbName = "webBlogDB";
 */
 mongoose.connect(
   "mongodb+srv://admin-darren:Mongodb382%23@cluster0-gmncq.mongodb.net/" +
-    dbName,
-  {
+  dbName, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
     useFindAndModify: false,
@@ -48,11 +47,11 @@ const Post = mongoose.model("Post", postSchema)
 app.get("/", (req, res) => {
 
   Post.find({}, (err, foundPost) => {
-    if (err) {
-      console.log(err);
-    } else if (foundPost) {
-      console.log(foundPost)
-      res.render("home", {
+      if (err) {
+        console.log(err);
+      } else if (foundPost) {
+        console.log(foundPost)
+        res.render("home", {
           startContent: homeStartingContent,
           newPosts: foundPost,
         });
@@ -86,39 +85,45 @@ app.get("/compose", (req, res) => {
 app.post("/compose", (req, res) => {
 
 
-    console.log(req.body.postTitle)
-    console.log(req.body.postBody)
+  console.log(req.body.postTitle)
+  console.log(req.body.postBody)
 
   const post = new Post({
     topic: req.body.postTitle,
     content: req.body.postBody,
   });
 
-  post.save();
-  
-
-  res.redirect("/");
-
-
+  post.save((err) => {
+    if (!err) {
+      res.redirect("/");
+    }
+  });
 });
 
-// app.get("/post/:postName", (req, res) => {
+app.get("/posts/:postId", (req, res) => {
 
-//   const postName = _.kebabCase(req.params.postName);
+  console.log(req.params)
+  const reqPostId = req.params.postId;
 
-//   posts.forEach((post) => {
-//     if (_.kebabCase(post.title) === postName) {
-//       res.render("post", {
-//         title: post.title,
-//         content: post.content,
-//       });
+  Post.findOne(
+    {
+      _id: reqPostId,
+    },
+    (err, foundPost) => {
+      if (!err) {
+          res.render("post", {
+            title: foundPost.topic,
+            content: foundPost.content,
+          });
+        } else {
+          res.redirect("/");
+        }
+      }
+  );
+})
 
-//     } else {
 
-//     }
-//   });
 
-// });
 
 
 let port = process.env.PORT;
@@ -129,4 +134,4 @@ if (port == null || port == "") {
 /* setting up port listening to enable node js server. */
 app.listen(port, () => {
   console.log("Server started on port 3000");
-})
+});
